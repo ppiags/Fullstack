@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: fullstack-store
+    runtime: node
+    plan: free
+    repo: https://github.com/ppiags/Fullstack
+    branch: master
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22.14.0
+      - key: ADMIN_TOKEN
+        value: dev-admin-token
+      - key: ALLOW_TEST_ORDER_ID
+        value: "1"
