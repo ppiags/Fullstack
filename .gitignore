@@ -1,0 +1,6 @@
+node_modules/
+data/store.db
+.env
+.agents/*
+.cursor/*
+.superpowers/*
