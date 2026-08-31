@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Цифровые товары</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/store.css">
+</head>
+<body class="page--storefront">
+  <header class="sf-header">
+    <div class="sf-container sf-header__inner">
+      <div class="sf-header__left">
+        <button type="button" class="sf-catalog-btn" id="catalogBtn" aria-expanded="false" aria-controls="catalogPanel">
+          <img class="sf-catalog-btn__icon-img" src="/assets/figma/catalog.svg" alt="" width="20" height="20">
+          Каталог
+        </button>
+      </div>
+      <div class="sf-search-wrap">
+        <div class="sf-search">
+          <div class="sf-search__field">
+            <input type="search" class="sf-search__input" placeholder="Игра, приложение или услуга..." readonly tabindex="-1">
+            <button type="button" class="sf-search__fav" aria-label="Избранное" tabindex="-1">
+              <img src="/assets/figma/favorite.svg" alt="" width="14" height="13">
+            </button>
+          </div>
+          <button type="button" class="sf-search__submit" aria-label="Поиск" tabindex="-1">
+            <img src="/assets/figma/search.svg" alt="" width="20" height="20">
+          </button>
+        </div>
+      </div>
+      <button type="button" class="sf-profile" aria-label="Профиль" tabindex="-1">
+        <img src="/assets/figma/profile.svg" alt="" width="20" height="20">
+      </button>
+    </div>
+    <div class="sf-catalog-backdrop" id="catalogBackdrop" hidden></div>
+    <div class="sf-catalog-panel" id="catalogPanel" hidden>
+      <div class="sf-container sf-catalog-panel__inner">
+        <aside class="sf-catalog-sidebar" aria-label="Категории каталога">
+          <button type="button" class="sf-catalog-cat sf-catalog-cat--active">Игры и игровые сервисы<span class="sf-catalog-chevron" aria-hidden="true"></span></button>
+          <button type="button" class="sf-catalog-cat">Игровые ценности<span class="sf-catalog-chevron" aria-hidden="true"></span></button>
+          <button type="button" class="sf-catalog-cat">Мобильные игры<span class="sf-catalog-chevron" aria-hidden="true"></span></button>
+          <button type="button" class="sf-catalog-cat">Сервисы и соцсети<span class="sf-catalog-chevron" aria-hidden="true"></span></button>
+          <button type="button" class="sf-catalog-cat">Программы<span class="sf-catalog-chevron" aria-hidden="true"></span></button>
+        </aside>
+        <div class="sf-catalog-main">
+          <div class="sf-catalog-grid">
+            <div class="sf-catalog-col">
+              <h3 class="sf-catalog-col__title">Steam<span class="sf-catalog-chevron" aria-hidden="true"></span></h3>
+              <ul class="sf-catalog-links">
+                <li><a href="#">Игры и DLC</a></li>
+                <li><a href="#">Пополнение баланса</a></li>
+                <li><a href="#">Подарочные карты</a></li>
+                <li><a href="#">Коллекционные<br>карточки</a></li>
+                <li><a href="#">Смена региона</a></li>
+              </ul>
+            </div>
+            <div class="sf-catalog-col">
+              <h3 class="sf-catalog-col__title">PlayStation<span class="sf-catalog-chevron" aria-hidden="true"></span></h3>
+              <ul class="sf-catalog-links">
+                <li><a href="#">Игры и DLC</a></li>
+                <li><a href="#">Пополнение баланса</a></li>
+                <li><a href="#">Новые аккаунты</a></li>
+                <li><a href="#">PS Plus</a></li>
+                <li><a href="#">EA Play</a></li>
+              </ul>
+            </div>
+            <div class="sf-catalog-col">
+              <h3 class="sf-catalog-col__title">Xbox<span class="sf-catalog-chevron" aria-hidden="true"></span></h3>
+              <ul class="sf-catalog-links">
+                <li><a href="#">Игры и DLC</a></li>
+                <li><a href="#">Пополнение баланса</a></li>
+                <li><a href="#">Новые аккаунты</a></li>
+                <li><a href="#">Xbox Game Pass</a></li>
+                <li><a href="#">Услуги</a></li>
+              </ul>
+            </div>
+            <div class="sf-catalog-col">
+              <h3 class="sf-catalog-col__title">Nintendo<span class="sf-catalog-chevron" aria-hidden="true"></span></h3>
+              <ul class="sf-catalog-links">
+                <li><a href="#">Игры и DLC</a></li>
+                <li><a href="#">Подарочные карты</a></li>
+                <li><a href="#">Новые аккаунты</a></li>
+                <li><a href="#">NS Online</a></li>
+              </ul>
+            </div>
+            <div class="sf-catalog-col">
+              <h3 class="sf-catalog-col__title">Battle.net<span class="sf-catalog-chevron" aria-hidden="true"></span></h3>
+              <ul class="sf-catalog-links">
+                <li><a href="#">World of Warcraft</a></li>
+                <li><a href="#">Подарочные карты</a></li>
+                <li><a href="#">Прямое пополнение</a></li>
+                <li><a href="#">Новые аккаунты</a></li>
+                <li><a href="#">Смена региона</a></li>
+              </ul>
+            </div>
+            <div class="sf-catalog-col sf-catalog-col--picks">
+              <h3 class="sf-catalog-col__title">Подборки<span class="sf-catalog-chevron" aria-hidden="true"></span></h3>
+              <ul class="sf-catalog-links">
+                <li><a href="#">Скидки 90%</a></li>
+                <li><a href="#">Популярные<br>издатели</a></li>
+                <li><a href="#">Лучшие серии игр</a></li>
+                <li><a href="#">Steam Deck</a></li>
+                <li><a href="#">Bundle-наборы</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="sf-main">
+    <div class="sf-container">
+      <section class="sf-carousel" id="carousel" aria-label="Баннеры">
+        <div class="sf-carousel__track">
+          <div class="sf-carousel__slide sf-carousel__slide--active" data-slide="0"></div>
+          <div class="sf-carousel__slide" data-slide="1"></div>
+          <div class="sf-carousel__slide" data-slide="2"></div>
+        </div>
+        <div class="sf-carousel__controls">
+          <button type="button" class="sf-carousel__arrow" id="carouselPrev" aria-label="Назад">‹</button>
+          <button type="button" class="sf-carousel__arrow" id="carouselNext" aria-label="Вперёд">›</button>
+        </div>
+        <div class="sf-carousel__dots" id="carouselDots" aria-hidden="true"></div>
+      </section>
+
+      <section class="sf-live" aria-label="Сервисы и пополнение">
+        <div class="sf-live__card">
+          <div class="sf-services__scroll" id="servicesRow"></div>
+          <div class="sf-live__divider" aria-hidden="true"></div>
+          <div class="sf-topup-bar">
+          <div class="sf-topup-bar__brand">
+            <div class="sf-topup-bar__icon-wrap">
+              <img class="sf-topup-bar__icon" id="topupIcon" src="/assets/figma/steam.png" alt="" width="72" height="72">
+            </div>
+            <div class="sf-topup-bar__meta">
+              <div class="sf-topup-bar__title-row">
+                <h2 class="sf-topup-bar__title">
+                  <span class="sf-topup-bar__title-line">Пополнение</span>
+                  <span class="sf-topup-bar__title-line" id="topupServiceName">Steam</span>
+                </h2>
+                <span class="sf-topup-bar__badge">5%</span>
+              </div>
+              <button type="button" class="sf-topup-bar__promo">Ввести промокод</button>
+            </div>
+          </div>
+          <div class="sf-topup-bar__login">
+            <img src="/assets/figma/profile.svg" alt="" width="20" height="20" class="sf-topup-bar__field-icon">
+            <span class="sf-topup-bar__placeholder" id="topupFieldLabel">Логин Steam</span>
+            <span class="sf-topup-bar__info">i</span>
+          </div>
+          <div class="sf-topup-bar__amount">
+            <div class="sf-topup-bar__amount-left">
+              <img src="/assets/figma/rub-icon.svg" alt="" width="20" height="20">
+              <div>
+                <span class="sf-topup-bar__amount-label">Сумма</span>
+                <input type="number" class="sf-topup-bar__amount-value" id="topupAmount" value="500" min="1" step="1">
+              </div>
+            </div>
+            <div class="sf-topup__currencies" id="currencySwitch" role="group" aria-label="Валюта">
+              <button type="button" class="sf-currency-btn sf-currency-btn--active" data-currency="USD" data-symbol="$">$</button>
+              <button type="button" class="sf-currency-btn" data-currency="KZT" data-symbol="₸">₸</button>
+              <button type="button" class="sf-currency-btn" data-currency="RUB" data-symbol="₽">₽</button>
+            </div>
+          </div>
+          <button type="button" class="sf-topup-bar__pay" id="topupPayBtn">Оплатить 500$</button>
+        </div>
+        </div>
+      </section>
+
+      <section class="sf-section">
+        <div class="sf-section__head sf-section__head--popular">
+          <h2 class="sf-section__title">Популярные товары</h2>
+          <div class="sf-filters" id="categoryFilters" role="tablist" aria-label="Категории">
+            <button type="button" class="sf-filter sf-filter--active" data-category="donate" role="tab">
+              <img src="/assets/figma/donate.svg" alt="" width="14" height="14"> Донат
+            </button>
+            <button type="button" class="sf-filter" data-category="subscription" role="tab">
+              <img src="/assets/figma/subscribes.svg" alt="" width="14" height="14"> Подписки
+            </button>
+            <button type="button" class="sf-filter" data-category="items" role="tab">
+              <img src="/assets/figma/items.svg" alt="" width="14" height="14"> Предметы
+            </button>
+            <button type="button" class="sf-filter" data-category="accounts" role="tab">
+              <img src="/assets/figma/accounts.svg" alt="" width="14" height="14"> Аккаунты
+            </button>
+            <button type="button" class="sf-filter" data-category="keys" role="tab">
+              <img src="/assets/figma/keys.svg" alt="" width="14" height="14"> Ключи
+            </button>
+            <button type="button" class="sf-filter" data-category="game_valut" role="tab">
+              <img src="/assets/figma/game-valut.svg" alt="" width="14" height="14"> Игровая валюта
+            </button>
+            <button type="button" class="sf-filter" data-category="other" role="tab">
+              <img src="/assets/figma/other.svg" alt="" width="14" height="14"> Другое
+            </button>
+          </div>
+        </div>
+        <div class="sf-product-grid" id="productsGrid"></div>
+        <p class="sf-empty" id="productsEmpty" hidden>Нет товаров в этой категории</p>
+      </section>
+
+      <section class="sf-section">
+        <div class="sf-section__head">
+          <h2 class="sf-section__title">Рекомендованные товары</h2>
+          <button type="button" class="sf-section__more">Показать все</button>
+        </div>
+        <div class="sf-product-row" id="featuredRow"></div>
+      </section>
+
+      <section class="sf-section">
+        <div class="sf-section__head">
+          <h2 class="sf-section__title">Другие товары</h2>
+          <button type="button" class="sf-section__more">Показать все</button>
+        </div>
+        <div class="sf-product-row" id="otherRow"></div>
+      </section>
+
+      <section class="sf-section">
+        <h2 class="sf-section__title">Последние отзывы</h2>
+        <div class="sf-reviews">
+          <article class="sf-review">
+            <div class="sf-review__head">
+              <div class="sf-review__user">
+                <div class="sf-review__avatar"></div>
+                <div>
+                  <div class="sf-review__name">Bizidin</div>
+                  <div class="sf-review__stars">★★★★★ <span>5.0</span></div>
+                </div>
+              </div>
+              <time class="sf-review__time">Сегодня в 11:48</time>
+            </div>
+            <div class="sf-review__bubble">
+              <p class="sf-review__text">Отзывчивый и приятный продавец, помог не только с товаром но и с другим вопросом. Рекомендую!</p>
+            </div>
+            <div class="sf-review__product">
+              <img src="/assets/product-cover.jpg" alt="" width="64" height="52">
+              <div class="sf-review__product-info">
+                <div class="sf-review__product-title">🌸 FunTime | Полностью готовый сервер под ключ ⚡</div>
+              </div>
+              <div class="sf-review__product-price">139₽</div>
+            </div>
+          </article>
+          <article class="sf-review">
+            <div class="sf-review__head">
+              <div class="sf-review__user">
+                <div class="sf-review__avatar sf-review__avatar--2"></div>
+                <div>
+                  <div class="sf-review__name">GameHunter</div>
+                  <div class="sf-review__stars">★★★★★ <span>5.0</span></div>
+                </div>
+              </div>
+              <time class="sf-review__time">Сегодня в 11:48</time>
+            </div>
+            <div class="sf-review__bubble">
+              <p class="sf-review__text">Быстрая выдача, поддержка ответила за минуту. Рекомендую.</p>
+            </div>
+            <div class="sf-review__product">
+              <img src="/assets/product-cover.jpg" alt="" width="64" height="52">
+              <div class="sf-review__product-info">
+                <div class="sf-review__product-title">🌸 FunTime | Полностью готовый сервер под ключ ⚡</div>
+              </div>
+              <div class="sf-review__product-price">139₽</div>
+            </div>
+          </article>
+          <article class="sf-review">
+            <div class="sf-review__head">
+              <div class="sf-review__user">
+                <div class="sf-review__avatar sf-review__avatar--3"></div>
+                <div>
+                  <div class="sf-review__name">SteamFan</div>
+                  <div class="sf-review__stars">★★★★★ <span>5.0</span></div>
+                </div>
+              </div>
+              <time class="sf-review__time">Сегодня в 11:48</time>
+            </div>
+            <div class="sf-review__bubble">
+              <p class="sf-review__text">Покупаю здесь регулярно — всё честно и без задержек.</p>
+            </div>
+            <div class="sf-review__product">
+              <img src="/assets/product-cover.jpg" alt="" width="64" height="52">
+              <div class="sf-review__product-info">
+                <div class="sf-review__product-title">🌸 FunTime | Полностью готовый сервер под ключ ⚡</div>
+              </div>
+              <div class="sf-review__product-price">139₽</div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="sf-footer">
+    <div class="sf-container">
+      <div class="sf-footer__card">
+      <nav class="sf-footer__nav">
+        <a href="#">Стать продавцом</a>
+        <a href="#">Бонусы</a>
+        <a href="#">Поддержка</a>
+        <a href="#">Гарантии</a>
+        <a href="#">Отзывы</a>
+      </nav>
+      <div class="sf-footer__mid">
+        <div class="sf-footer__social">
+          <a href="#" class="sf-footer__social-link" aria-label="VK">
+            <img src="/assets/figma/social-vk.svg" alt="" width="34" height="34">
+          </a>
+          <a href="#" class="sf-footer__social-link" aria-label="Telegram">
+            <img src="/assets/figma/social-tg.svg" alt="" width="34" height="34">
+          </a>
+          <a href="#" class="sf-footer__social-link" aria-label="TikTok">
+            <img src="/assets/figma/social-tt.svg" alt="" width="34" height="34">
+          </a>
+          <a href="#" class="sf-footer__social-link sf-footer__social-link--yt" aria-label="YouTube">
+            <img src="/assets/figma/social-yt.svg" alt="" width="18" height="18">
+          </a>
+        </div>
+        <div class="sf-footer__payments">
+          <span class="sf-pay-badge sf-pay-badge--visa">VISA</span>
+          <span class="sf-pay-badge sf-pay-badge--mir">мир</span>
+          <span class="sf-pay-badge sf-pay-badge--mc"><span></span><span></span></span>
+        </div>
+      </div>
+      <div class="sf-footer__legal">
+        <a href="#">Политика конфиденциальности</a>
+        <a href="#">Соглашение</a>
+        <a href="#">Договор-оферта</a>
+      </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/store.js" type="module"></script>
+</body>
+</html>

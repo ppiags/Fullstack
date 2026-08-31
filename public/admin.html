@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin</title>
+  <link rel="stylesheet" href="/css/store.css">
+</head>
+<body class="page--dark">
+  <div class="page page--admin">
+    <h1>Admin — заказы</h1>
+    <div class="card">
+      <label class="admin-label" for="tokenInput">Admin Token</label>
+      <input type="password" class="admin-input" id="tokenInput">
+      <button type="button" class="btn btn--primary admin-token-save" id="saveToken">Сохранить</button>
+    </div>
+    <div class="card">
+      <div class="admin-toolbar">
+        <button type="button" class="btn btn--ghost" id="refreshBtn">Обновить</button>
+      </div>
+      <div class="admin-filters" id="orderFilters" role="tablist" aria-label="Статус заказа">
+          <button type="button" class="admin-filter admin-filter--active" data-status="all" role="tab">Все</button>
+          <button type="button" class="admin-filter" data-status="created" role="tab">Создан</button>
+          <button type="button" class="admin-filter" data-status="paid" role="tab">Оплачен</button>
+          <button type="button" class="admin-filter" data-status="delivering" role="tab">Выдаётся</button>
+          <button type="button" class="admin-filter" data-status="delivered" role="tab">Выдан</button>
+          <button type="button" class="admin-filter" data-status="out_of_stock" role="tab">Нет в наличии</button>
+          <button type="button" class="admin-filter" data-status="delivery_failed" role="tab">Ошибка выдачи</button>
+          <button type="button" class="admin-filter" data-status="payment_failed" role="tab">Оплата не прошла</button>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Order ID</th><th>SKU</th><th>Status</th><th>Amount</th><th>Ключ</th><th></th></tr>
+        </thead>
+        <tbody id="ordersBody"></tbody>
+      </table>
+    </div>
+    <p class="admin-back"><a href="/">← На главную</a></p>
+  </div>
+  <script src="/js/admin.js" type="module"></script>
+</body>
+</html>

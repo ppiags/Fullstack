@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Заказ</title>
+  <link rel="stylesheet" href="/css/store.css">
+</head>
+<body class="page--dark">
+  <div class="page">
+    <h1>Заказ <span id="orderId"></span></h1>
+    <div class="card">
+      <div>Статус: <span id="status" class="status"></span></div>
+      <div id="amounts" style="margin-top:8px;color:var(--muted)"></div>
+      <div id="codeSection" hidden>
+        <p style="margin-top:16px">Ваш ключ:</p>
+        <div class="code-box" id="deliveryCode"></div>
+      </div>
+      <div class="promo-row" id="promoSection">
+        <input type="text" id="promoInput" placeholder="Промокод">
+        <button type="button" class="btn btn--ghost" id="applyPromoBtn">Применить</button>
+      </div>
+      <p id="promoMsg" style="color:var(--muted);margin-top:8px"></p>
+      <div class="actions" id="payActions">
+        <button type="button" class="btn btn--primary" id="paySuccess">Оплатить (успех)</button>
+        <button type="button" class="btn btn--ghost" id="payFail">Оплатить (неуспех)</button>
+      </div>
+    </div>
+    <p style="margin-top:16px"><a href="/" style="color:var(--accent)">← На главную</a></p>
+  </div>
+  <script src="/js/order.js" type="module"></script>
+</body>
+</html>
