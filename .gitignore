@@ -1,6 +1,9 @@
 node_modules/
 data/store.db
+data/store.db-shm
+data/store.db-wal
 .env
+docs/
 .agents/*
 .cursor/*
 .superpowers/*
