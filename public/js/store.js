@@ -1,11 +1,28 @@
-const BUY_SKU = "KEY-CS2-PRIME";
-let buyInFlight = false;
+import { buyOffer, formatPrice, offerBuyLabel } from "./catalog-buy.js";
 
-const TYPE_TO_CATEGORY = {
-  topup: "donate",
+const PAGE_SIZE = 20;
+/** @type {Map<string, object>} */
+const popularBySku = new Map();
+/** @type {Map<string, { stockAvailable: number, price: number, sellerName: string }>} */
+const offersById = new Map();
+let popularOffset = 0;
+let popularTotal = 0;
+let popularLoading = false;
+let filterGeneration = 0;
+let activeCategory = "donate";
+let activeFilters = { q: "", type: "", other: "", min: "", max: "" };
+let filterDebounceTimer = null;
+let ws = null;
+let wsReconnectDelay = 1000;
+let wsReconnectTimer = null;
+
+const CATEGORY_TO_TYPE = {
+  donate: "topup",
   subscription: "subscription",
-  key: "items",
-  giftcard: "accounts",
+  items: "key",
+  keys: "key",
+  accounts: "giftcard",
+  game_valut: "giftcard",
 };
 
 const PRODUCT_META = {
@@ -39,13 +56,6 @@ const PRODUCT_META = {
   "GIFT-PSN-1000": { oldPrice: 1100, displayTitle: "PlayStation Store 1000 ₽" },
   "GIFT-XBOX-1500": { oldPrice: 1700, displayTitle: "Xbox Gift Card 1500 ₽" },
   "GIFT-ROBLOX-800": { oldPrice: 990, displayTitle: "Roblox 800 Robux" },
-};
-
-const FEATURED_STATIC = {
-  title: "💥 DOOM 2016 💀 STEAM KEY 🔑\nРФ+СНГ",
-  price: 990,
-  oldPrice: 1990,
-  cover: "/assets/product-cover.jpg",
 };
 
 const TOPUP_SERVICES = [
@@ -119,37 +129,27 @@ const TOPUP_SERVICES = [
   },
 ];
 
-const FILTER_FN = {
-  donate: (p) => p.type === "topup",
-  subscription: (p) => p.type === "subscription",
-  items: (p) => p.type === "key",
-  accounts: (p) => p.type === "giftcard",
-  keys: (p) => p.type === "key",
-  game_valut: (p) => p.type === "giftcard",
-  other: (p) => !["topup", "subscription", "key", "giftcard"].includes(p.type),
-};
-
-function buyIdempotencyKey(sku) {
-  const storageKey = `buy_idempotency_${sku}`;
-  let key = sessionStorage.getItem(storageKey);
-  if (!key) {
-    key = `buy_${sku}_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
-    sessionStorage.setItem(storageKey, key);
-  }
-  return key;
+function readUrl() {
+  const params = new URLSearchParams(location.search);
+  return {
+    q: params.get("q") || "",
+    type: params.get("type") || "",
+    other: params.get("other") || "",
+    min: params.get("min") || "",
+    max: params.get("max") || "",
+  };
 }
 
-function enrichProduct(p) {
-  const meta = PRODUCT_META[p.sku] || {};
-  const category = TYPE_TO_CATEGORY[p.type] || "items";
-  const isIcon = p.image && p.image.endsWith(".svg");
-  const cover =
-    meta.cover ||
-    (isIcon ? "/assets/product-cover.jpg" : p.image) ||
-    "/assets/product-cover.jpg";
-  const displayTitle = meta.displayTitle || p.name;
-  const oldPrice = meta.oldPrice;
-  return { ...p, category, cover, displayTitle, oldPrice };
+function syncUrl() {
+  const params = new URLSearchParams();
+  if (activeFilters.q) params.set("q", activeFilters.q);
+  if (activeFilters.other === "1") params.set("other", "1");
+  else if (activeFilters.type) params.set("type", activeFilters.type);
+  if (activeFilters.min) params.set("min", activeFilters.min);
+  if (activeFilters.max) params.set("max", activeFilters.max);
+  const qs = params.toString();
+  const next = qs ? `${location.pathname}?${qs}` : location.pathname;
+  history.replaceState(null, "", next);
 }
 
 function formatTitleHtml(title) {
@@ -160,41 +160,287 @@ function formatTitleHtml(title) {
     .join("<br>");
 }
 
-function createProductCard(p) {
+function rememberBuyOffer(product) {
+  if (!product.buyOfferId) return;
+  offersById.set(product.buyOfferId, {
+    stockAvailable: product.buyStockAvailable,
+    price: product.minPrice,
+    sellerName: "",
+  });
+}
+
+function createProductCard(product) {
+  const meta = PRODUCT_META[product.sku] || {};
+  const cover = meta.cover || "/assets/product-cover.jpg";
+  const displayTitle = meta.displayTitle || product.name;
+  const oldPriceHtml = meta.oldPrice
+    ? `<span class="product-card__price-old">${meta.oldPrice.toLocaleString("ru-RU")} ₽</span>`
+    : "";
+  const soldOut = product.buyStockAvailable === 0;
+  rememberBuyOffer(product);
+
   const card = document.createElement("article");
   card.className = "product-card";
-  card.dataset.category = p.category;
-  card.dataset.sku = p.sku;
-
-  const oldPriceHtml = p.oldPrice
-    ? `<span class="product-card__price-old">${p.oldPrice.toLocaleString("ru-RU")} ₽</span>`
-    : "";
-
+  card.dataset.sku = product.sku;
+  card.dataset.offerId = product.buyOfferId;
   card.innerHTML = `
     <div class="product-card__media">
-      <img src="${p.cover}" alt="" loading="lazy">
+      <img src="${cover}" alt="" loading="lazy">
     </div>
     <div class="product-card__body">
-      <div class="product-card__title">${formatTitleHtml(p.displayTitle)}</div>
+      <div class="product-card__title">${formatTitleHtml(displayTitle)}</div>
       <div class="product-card__prices">
-        <span class="product-card__price">${p.price.toLocaleString("ru-RU")} ₽</span>
+        <span class="product-card__price">${formatPrice(product.minPrice)}</span>
         ${oldPriceHtml}
       </div>
-      <button type="button" class="product-card__buy" data-sku="${p.sku}">Купить</button>
+      <button type="button" class="product-card__buy${soldOut ? " product-card__buy--sold-out" : ""}" data-offer-id="${product.buyOfferId}"${soldOut ? " disabled" : ""}>${offerBuyLabel(product.buyStockAvailable)}</button>
     </div>
   `;
   return card;
 }
 
-function createFeaturedCard() {
-  return createProductCard({
-    sku: BUY_SKU,
-    category: "items",
-    cover: FEATURED_STATIC.cover,
-    displayTitle: FEATURED_STATIC.title,
-    price: FEATURED_STATIC.price,
-    oldPrice: FEATURED_STATIC.oldPrice,
+function applyProductAgg(sku, { minPrice, offerCount, buyOfferId, buyStockAvailable }) {
+  const cached = popularBySku.get(sku);
+  if (cached) {
+    cached.minPrice = minPrice;
+    cached.offerCount = offerCount;
+    cached.buyOfferId = buyOfferId;
+    cached.buyStockAvailable = buyStockAvailable;
+  }
+  rememberBuyOffer({ buyOfferId, buyStockAvailable, minPrice });
+  document.querySelectorAll(`article.product-card[data-sku="${CSS.escape(sku)}"]`).forEach((card) => {
+    const priceEl = card.querySelector(".product-card__price");
+    const buy = card.querySelector(".product-card__buy");
+    if (priceEl) priceEl.textContent = formatPrice(minPrice);
+    if (buyOfferId) card.dataset.offerId = buyOfferId;
+    if (buy && buyOfferId != null && buyStockAvailable != null) {
+      buy.dataset.offerId = buyOfferId;
+      const soldOut = buyStockAvailable === 0;
+      buy.disabled = soldOut;
+      buy.textContent = offerBuyLabel(buyStockAvailable);
+      buy.classList.toggle("product-card__buy--sold-out", soldOut);
+    }
   });
+}
+
+function collectFilters() {
+  const searchInput = document.getElementById("searchInput");
+  const minInput = document.getElementById("priceMin");
+  const maxInput = document.getElementById("priceMax");
+  const other = activeCategory === "other" ? "1" : "";
+  const typeFromCategory = other ? "" : CATEGORY_TO_TYPE[activeCategory] || "";
+  return {
+    q: searchInput?.value ?? activeFilters.q,
+    type: other ? "" : typeFromCategory,
+    other,
+    min: minInput?.value ?? activeFilters.min,
+    max: maxInput?.value ?? activeFilters.max,
+  };
+}
+
+function categoryFromUrl({ type, other, q }) {
+  if (other === "1") return "other";
+  if (!type) return q ? "" : "donate";
+  const entry = Object.entries(CATEGORY_TO_TYPE).find(([, t]) => t === type);
+  return entry?.[0] || "donate";
+}
+
+function catalogQuery(filters, { limit, offset }) {
+  const params = new URLSearchParams();
+  params.set("limit", String(limit));
+  params.set("offset", String(offset));
+  if (filters.q) params.set("q", filters.q);
+  if (filters.other === "1") params.set("other", "1");
+  else if (filters.type) params.set("type", filters.type);
+  if (filters.min) params.set("min", filters.min);
+  if (filters.max) params.set("max", filters.max);
+  return params;
+}
+
+function setCatalogError(text) {
+  const el = document.getElementById("catalogError");
+  if (!el) return;
+  if (!text) {
+    el.hidden = true;
+    el.textContent = "";
+    return;
+  }
+  el.hidden = false;
+  el.textContent = text;
+}
+
+function updateLoadMoreBtn() {
+  const btn = document.getElementById("loadMoreBtn");
+  if (!btn) return;
+  const loaded = document.getElementById("productsGrid")?.children.length ?? 0;
+  btn.hidden = loaded >= popularTotal;
+}
+
+async function fetchCatalog(filters, paging) {
+  const res = await fetch(`/api/catalog?${catalogQuery(filters, paging)}`);
+  if (!res.ok) throw new Error("catalog failed");
+  return res.json();
+}
+
+async function loadPopular({ append }) {
+  if (popularLoading && append) return;
+  popularLoading = true;
+  const gen = filterGeneration;
+  const btn = document.getElementById("loadMoreBtn");
+  if (btn && append) btn.disabled = true;
+  const offset = append ? popularOffset : 0;
+  try {
+    const data = await fetchCatalog(activeFilters, { limit: PAGE_SIZE, offset });
+    if (gen !== filterGeneration) return;
+    const grid = document.getElementById("productsGrid");
+    const empty = document.getElementById("productsEmpty");
+    if (!grid) return;
+    if (!append) {
+      grid.innerHTML = "";
+      popularBySku.clear();
+    }
+    data.products.forEach((p) => {
+      popularBySku.set(p.sku, p);
+      grid.appendChild(createProductCard(p));
+    });
+    popularTotal = data.total;
+    popularOffset = offset + data.products.length;
+    if (empty) empty.hidden = grid.children.length > 0;
+    setCatalogError("");
+    updateLoadMoreBtn();
+  } catch {
+    if (gen !== filterGeneration) return;
+    setCatalogError("Не удалось загрузить каталог");
+  } finally {
+    popularLoading = false;
+    if (btn) btn.disabled = false;
+  }
+}
+
+function scheduleFilterApply() {
+  filterGeneration += 1;
+  clearTimeout(filterDebounceTimer);
+  filterDebounceTimer = setTimeout(() => {
+    activeFilters = collectFilters();
+    syncUrl();
+    popularOffset = 0;
+    loadPopular({ append: false });
+  }, 80);
+}
+
+function initSearchAndPriceFilters() {
+  const searchInput = document.getElementById("searchInput");
+  const minInput = document.getElementById("priceMin");
+  const maxInput = document.getElementById("priceMax");
+  const fromUrl = readUrl();
+  activeFilters = { ...fromUrl };
+  activeCategory = categoryFromUrl(fromUrl);
+  if (searchInput && fromUrl.q) searchInput.value = fromUrl.q;
+  if (minInput && fromUrl.min) minInput.value = fromUrl.min;
+  if (maxInput && fromUrl.max) maxInput.value = fromUrl.max;
+  searchInput?.addEventListener("input", scheduleFilterApply);
+  minInput?.addEventListener("input", scheduleFilterApply);
+  maxInput?.addEventListener("input", scheduleFilterApply);
+  window.addEventListener("popstate", () => {
+    const urlState = readUrl();
+    activeFilters = { ...urlState };
+    activeCategory = categoryFromUrl(urlState);
+    if (searchInput) searchInput.value = urlState.q;
+    if (minInput) minInput.value = urlState.min;
+    if (maxInput) maxInput.value = urlState.max;
+    document.querySelectorAll("#categoryFilters .sf-filter").forEach((btn) => {
+      btn.classList.toggle("sf-filter--active", btn.dataset.category === activeCategory);
+    });
+    popularOffset = 0;
+    loadPopular({ append: false });
+  });
+}
+
+function initCategoryFilters() {
+  const filters = document.getElementById("categoryFilters");
+  if (!filters) return;
+  filters.querySelectorAll(".sf-filter").forEach((btn) => {
+    btn.classList.toggle("sf-filter--active", btn.dataset.category === activeCategory);
+  });
+  filters.addEventListener("click", (e) => {
+    const btn = e.target.closest(".sf-filter");
+    if (!btn) return;
+    activeCategory = btn.dataset.category;
+    filters.querySelectorAll(".sf-filter").forEach((b) => {
+      b.classList.toggle("sf-filter--active", b.dataset.category === activeCategory);
+    });
+    scheduleFilterApply();
+  });
+}
+
+async function renderFeaturedRows() {
+  const featuredRow = document.getElementById("featuredRow");
+  const otherRow = document.getElementById("otherRow");
+  if (!featuredRow || !otherRow) return;
+  const empty = { q: "", type: "", other: "", min: "", max: "" };
+  try {
+    const [feat, other] = await Promise.all([
+      fetchCatalog(empty, { limit: 5, offset: 0 }),
+      fetchCatalog(empty, { limit: 5, offset: 5 }),
+    ]);
+    featuredRow.innerHTML = "";
+    otherRow.innerHTML = "";
+    feat.products.forEach((p) => featuredRow.appendChild(createProductCard(p)));
+    other.products.forEach((p) => otherRow.appendChild(createProductCard(p)));
+  } catch {
+    // keep previous side-row content or leave empty; do not block init/WS
+  }
+}
+
+function handleWsMessage(event) {
+  let msg;
+  try {
+    msg = JSON.parse(event.data);
+  } catch {
+    return;
+  }
+  if (msg.type !== "offer.updated") return;
+  if (!msg.sku) return;
+  if (msg.minPrice == null || msg.offerCount == null) return;
+  if (msg.buyOfferId == null || msg.buyStockAvailable == null) return;
+  applyProductAgg(msg.sku, {
+    minPrice: msg.minPrice,
+    offerCount: msg.offerCount,
+    buyOfferId: msg.buyOfferId,
+    buyStockAvailable: msg.buyStockAvailable,
+  });
+}
+
+function connectWs() {
+  if (wsReconnectTimer) {
+    clearTimeout(wsReconnectTimer);
+    wsReconnectTimer = null;
+  }
+  if (ws) {
+    ws.onclose = null;
+    ws.close();
+  }
+
+  const proto = location.protocol === "https:" ? "wss:" : "ws:";
+  ws = new WebSocket(`${proto}//${location.host}/ws`);
+  ws.onmessage = handleWsMessage;
+  ws.onclose = () => {
+    wsReconnectTimer = setTimeout(async () => {
+      try {
+        await Promise.all([
+          loadPopular({ append: false }),
+          renderFeaturedRows(),
+        ]);
+      } catch {
+        // reconnect even if refresh failed
+      }
+      connectWs();
+      wsReconnectDelay = Math.min(wsReconnectDelay * 2, 30000);
+    }, wsReconnectDelay);
+  };
+  ws.onopen = () => {
+    wsReconnectDelay = 1000;
+  };
 }
 
 function initCarousel() {
@@ -346,86 +592,26 @@ function initServices() {
   }
 }
 
-function initFilters(products) {
-  const filters = document.getElementById("categoryFilters");
-  const grid = document.getElementById("productsGrid");
-  const empty = document.getElementById("productsEmpty");
-  let active = "donate";
-
-  function render(category) {
-    active = category;
-    grid.innerHTML = "";
-    const filterFn = FILTER_FN[category] || FILTER_FN.donate;
-    const filtered = products.filter(filterFn);
-    filtered.forEach((p) => grid.appendChild(createProductCard(p)));
-    empty.hidden = filtered.length > 0;
-    filters.querySelectorAll(".sf-filter").forEach((btn) => {
-      btn.classList.toggle(
-        "sf-filter--active",
-        btn.dataset.category === category,
-      );
-    });
-  }
-
-  filters.addEventListener("click", (e) => {
-    const btn = e.target.closest(".sf-filter");
-    if (!btn) return;
-    render(btn.dataset.category);
+async function initStore() {
+  initSearchAndPriceFilters();
+  initCategoryFilters();
+  document.getElementById("loadMoreBtn")?.addEventListener("click", () => {
+    loadPopular({ append: true });
   });
-
-  render(active);
-}
-
-async function loadProducts() {
-  const res = await fetch("/api/products");
-  const { products: raw } = await res.json();
-  const products = raw.map(enrichProduct);
-
-  const featuredRow = document.getElementById("featuredRow");
-  for (let i = 0; i < 5; i += 1) {
-    featuredRow.appendChild(createFeaturedCard());
-  }
-
-  const otherRow = document.getElementById("otherRow");
-  const cs2 = products.find((p) => p.sku === BUY_SKU);
-  const otherProducts = cs2
-    ? [cs2, ...products.filter((p) => p.sku !== BUY_SKU)]
-    : products;
-  otherProducts
-    .slice(0, 5)
-    .forEach((p) => otherRow.appendChild(createProductCard(p)));
-
-  initFilters(products);
-
-  document.querySelector(".sf-main").addEventListener("click", onBuyClick);
-}
-
-async function onBuyClick(e) {
-  const btn = e.target.closest(".product-card__buy");
-  if (!btn || buyInFlight) return;
-  const { sku } = btn.dataset;
-  if (!sku) return;
-
-  buyInFlight = true;
-  btn.disabled = true;
-  try {
-    const res = await fetch("/api/orders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sku, idempotency_key: buyIdempotencyKey(sku) }),
-    });
-    if (!res.ok) throw new Error("order failed");
-    const order = await res.json();
-    sessionStorage.removeItem(`buy_idempotency_${sku}`);
-    location.href = `/order.html?id=${order.id}`;
-  } catch {
-    buyInFlight = false;
-    btn.disabled = false;
-  }
+  activeFilters = collectFilters();
+  await Promise.all([loadPopular({ append: false }), renderFeaturedRows()]);
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".product-card__buy");
+    if (!btn || btn.disabled) return;
+    const offerId = btn.dataset.offerId;
+    if (!offerId) return;
+    buyOffer(offerId, btn, offersById);
+  });
+  connectWs();
 }
 
 initCarousel();
 initCatalog();
 initTopup();
 initServices();
-loadProducts();
+initStore();

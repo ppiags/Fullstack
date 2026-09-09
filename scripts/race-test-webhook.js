@@ -1,10 +1,12 @@
 import { jsonPost, jsonGet } from './lib/http.js';
 
 const CONCURRENCY = 50;
+const OFFER_ID = 'off_KEY-CS2-PRIME_2';
 
 async function main() {
-  const { body: order } = await jsonPost('/api/orders', { sku: 'KEY-CS2-PRIME' });
+  const { body: order } = await jsonPost('/api/orders', { offerId: OFFER_ID });
   if (!order.id) throw new Error('Failed to create order');
+  if (order.status !== 'reserved') throw new Error(`Expected reserved, got ${order.status}`);
 
   const eventId = `evt_race_${Date.now()}`;
   const payload = {

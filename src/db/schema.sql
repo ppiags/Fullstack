@@ -73,3 +73,17 @@ CREATE TABLE IF NOT EXISTS order_idempotency (
 
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_keys_status ON keys(status);
+
+CREATE TABLE IF NOT EXISTS offers (
+  id TEXT PRIMARY KEY,
+  product_sku TEXT NOT NULL,
+  seller_name TEXT NOT NULL,
+  price INTEGER NOT NULL,
+  currency TEXT NOT NULL DEFAULT 'RUB',
+  stock_available INTEGER NOT NULL DEFAULT 0,
+  stock_reserved INTEGER NOT NULL DEFAULT 0,
+  updated_at TEXT NOT NULL,
+  FOREIGN KEY (product_sku) REFERENCES products(sku)
+);
+
+CREATE INDEX IF NOT EXISTS idx_offers_sku ON offers(product_sku);

@@ -7,6 +7,8 @@ import webhooksRouter from './routes/webhooks.js';
 import adminRouter from './routes/admin.js';
 import payRouter from './routes/pay.js';
 import { supplierARouter, supplierBRouter } from './routes/suppliers.js';
+import { attachWebSocket } from './services/wsHub.js';
+import { startHoldExpiry } from './services/holdExpiryService.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -37,5 +39,7 @@ const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv
 if (isMain) {
   const app = createApp();
   const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => console.log(`http://localhost:${PORT}`));
+  const server = app.listen(PORT, () => console.log(`http://localhost:${PORT}`));
+  attachWebSocket(server);
+  startHoldExpiry();
 }

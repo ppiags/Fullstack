@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { listOrdersByStatus, listAllOrders } from '../services/orderService.js';
+import { listOrdersByStatus, listAllOrders, getOrder } from '../services/orderService.js';
 import { deliver } from '../services/deliveryService.js';
-import { getOrder } from '../services/orderService.js';
+import { getAdminOfferView, listAdminOffers, patchOffer } from '../services/offerService.js';
 
 const router = Router();
 
@@ -21,6 +21,33 @@ router.get('/orders', (req, res) => {
   }
   const statuses = statusParam.split(',').map((s) => s.trim()).filter(Boolean);
   res.json({ orders: listOrdersByStatus(statuses) });
+});
+
+router.get('/offers', (_req, res) => {
+  res.json({ offers: listAdminOffers() });
+});
+
+router.get('/offers/:id', (req, res) => {
+  try {
+    res.json(getAdminOfferView(req.params.id));
+  } catch (e) {
+    if (e.code === 'OFFER_NOT_FOUND') return res.status(404).json({ error: 'OFFER_NOT_FOUND' });
+    throw e;
+  }
+});
+
+router.patch('/offers/:id', (req, res) => {
+  const { price, stockAvailable } = req.body ?? {};
+  try {
+    patchOffer(req.params.id, { price, stockAvailable });
+    res.json(getAdminOfferView(req.params.id));
+  } catch (e) {
+    if (e.code === 'OFFER_NOT_FOUND') return res.status(404).json({ error: 'OFFER_NOT_FOUND' });
+    if (e.code === 'INVALID_PRICE' || e.code === 'INVALID_STOCK') {
+      return res.status(400).json({ error: e.code });
+    }
+    throw e;
+  }
 });
 
 router.post('/orders/:id/retry', async (req, res) => {

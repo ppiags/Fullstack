@@ -1,7 +1,10 @@
 import { jsonPost, jsonGet } from './lib/http.js';
 
+const OFFER_ID = 'off_KEY-CS2-PRIME_2';
+
 async function main() {
-  const { body: order } = await jsonPost('/api/orders', { sku: 'KEY-CS2-PRIME' });
+  const { body: order } = await jsonPost('/api/orders', { offerId: OFFER_ID });
+  if (order.status !== 'reserved') throw new Error(`Expected reserved, got ${order.status}`);
   const payload = {
     event_id: 'evt_dedup_test',
     order_id: order.id,

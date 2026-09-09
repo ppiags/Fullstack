@@ -12,8 +12,8 @@ beforeEach(() => {
   process.env.DB_PATH = TEST_DB;
   const db = getDb();
   initDb(db);
-  db.prepare(`INSERT INTO keys (code, status) VALUES ('TEST-KEY-1', 'available')`).run();
-  db.prepare(`INSERT INTO keys (code, status) VALUES ('TEST-KEY-2', 'available')`).run();
+  db.prepare(`INSERT INTO keys (code, status, offer_id) VALUES ('TEST-KEY-1', 'available', 'off_1')`).run();
+  db.prepare(`INSERT INTO keys (code, status, offer_id) VALUES ('TEST-KEY-2', 'available', 'off_2')`).run();
 });
 
 afterEach(() => {
@@ -22,21 +22,21 @@ afterEach(() => {
 });
 
 test('claimKey assigns one key', () => {
-  const r = claimKey('ord_1');
+  const r = claimKey('ord_1', 'off_1');
   assert.equal(r.ok, true);
   assert.equal(getKeyByOrderId('ord_1'), r.code);
 });
 
 test('claimKey is idempotent for same order', () => {
-  const r1 = claimKey('ord_1');
-  const r2 = claimKey('ord_1');
+  const r1 = claimKey('ord_1', 'off_1');
+  const r2 = claimKey('ord_1', 'off_1');
   assert.equal(r1.code, r2.code);
 });
 
 test('claimKey returns out_of_stock when empty', () => {
-  claimKey('ord_x');
-  claimKey('ord_y');
-  const r = claimKey('ord_z');
+  claimKey('ord_x', 'off_1');
+  claimKey('ord_y', 'off_1');
+  const r = claimKey('ord_z', 'off_1');
   assert.equal(r.ok, false);
   assert.equal(r.reason, 'out_of_stock');
 });

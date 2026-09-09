@@ -2,8 +2,14 @@ node_modules/
 data/store.db
 data/store.db-shm
 data/store.db-wal
+data/e2e.db
+data/e2e.db-shm
+data/e2e.db-wal
+test-results/
+playwright-report/
 .env
 docs/
 .agents/*
 .cursor/*
-.superpowers/*
+.superpowers/
+/data/race*

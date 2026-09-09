@@ -32,7 +32,7 @@ export function applyPromoToOrder(orderId, code) {
   const db = getDb();
   return db.transaction(() => {
     const order = getOrder(orderId);
-    if (!order || order.status !== 'created') return { ok: false, error: 'INVALID_ORDER_STATE' };
+    if (!order || order.status !== 'reserved') return { ok: false, error: 'INVALID_ORDER_STATE' };
     if (order.promo_code) return { ok: false, error: 'PROMO_ALREADY_APPLIED' };
 
     const promo = getPromo(code);

@@ -15,12 +15,29 @@
       <button type="button" class="btn btn--primary admin-token-save" id="saveToken">Сохранить</button>
     </div>
     <div class="card">
+      <h2>Offer</h2>
+      <div class="admin-offer-form">
+        <label class="admin-label" for="offerIdInput">Offer ID</label>
+        <input type="text" class="admin-input" id="offerIdInput" placeholder="off_race_last">
+        <label class="admin-label" for="offerPriceInput">Цена</label>
+        <input type="number" class="admin-input" id="offerPriceInput" min="0">
+        <label class="admin-label" for="offerStockInput">Остаток</label>
+        <input type="number" class="admin-input" id="offerStockInput" min="0">
+        <button type="button" class="btn btn--ghost" id="openOffersBtn">Все offers</button>
+        <button type="button" class="btn btn--primary" id="saveOfferBtn">Сохранить offer</button>
+        <button type="button" class="btn btn--ghost" id="soldOutSkuBtn">Обнулить SKU</button>
+        <button type="button" class="btn btn--primary" id="makeBuyOfferBtn">Карточка купит этот</button>
+        <p class="admin-offer-status" id="offerStatus"></p>
+      </div>
+    </div>
+    <div class="card">
       <div class="admin-toolbar">
         <button type="button" class="btn btn--ghost" id="refreshBtn">Обновить</button>
       </div>
       <div class="admin-filters" id="orderFilters" role="tablist" aria-label="Статус заказа">
           <button type="button" class="admin-filter admin-filter--active" data-status="all" role="tab">Все</button>
-          <button type="button" class="admin-filter" data-status="created" role="tab">Создан</button>
+          <button type="button" class="admin-filter" data-status="reserved" role="tab">Забронирован</button>
+          <button type="button" class="admin-filter" data-status="unfulfilled" role="tab">Оплачен, не выдан</button>
           <button type="button" class="admin-filter" data-status="paid" role="tab">Оплачен</button>
           <button type="button" class="admin-filter" data-status="delivering" role="tab">Выдаётся</button>
           <button type="button" class="admin-filter" data-status="delivered" role="tab">Выдан</button>
@@ -36,6 +53,23 @@
       </table>
     </div>
     <p class="admin-back"><a href="/">← На главную</a></p>
+  </div>
+  <div class="admin-modal" id="offersModal" hidden>
+    <div class="admin-modal__panel">
+      <div class="admin-modal__head">
+        <h2>Offers</h2>
+        <button type="button" class="btn btn--ghost btn--sm" id="closeOffersBtn">Закрыть</button>
+      </div>
+      <input type="search" class="admin-input" id="offersSearch" placeholder="id, sku, seller…" autocomplete="off">
+      <div class="admin-modal__table-wrap">
+        <table>
+          <thead>
+            <tr><th>ID</th><th>SKU</th><th>Seller</th><th>Цена</th><th>Сток</th><th>Reserved</th></tr>
+          </thead>
+          <tbody id="offersBody"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
   <script src="/js/admin.js" type="module"></script>
 </body>

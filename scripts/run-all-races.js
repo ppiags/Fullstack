@@ -12,6 +12,7 @@ const scripts = [
   'race-test-double-buy.js',
   'race-test-promo.js',
   'race-test-out-of-stock.js',
+  'race-test-last-unit.js',
 ];
 
 async function runScript(name) {
@@ -29,14 +30,14 @@ async function runScript(name) {
   });
 }
 
-console.log('Resetting test DB...');
-const reset = await jsonPost('/api/test/reset-db', {});
-if (reset.status !== 200) {
-  console.error('FAIL: start server with ALLOW_TEST_ORDER_ID=1 first');
-  process.exit(1);
-}
-
 for (const script of scripts) {
+  console.log('\nResetting test DB...');
+  const reset = await jsonPost('/api/test/reset-db', {});
+  if (reset.status !== 200) {
+    console.error('FAIL: start server with ALLOW_TEST_ORDER_ID=1 first');
+    process.exit(1);
+  }
+
   console.log(`\n=== ${script} ===`);
   await runScript(script);
 }

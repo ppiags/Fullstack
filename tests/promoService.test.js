@@ -21,6 +21,18 @@ afterEach(() => {
   if (fs.existsSync(TEST_DB)) fs.unlinkSync(TEST_DB);
 });
 
+function pickOfferId() {
+  const row = getDb().prepare(`
+    SELECT id
+    FROM offers
+    WHERE product_sku = 'KEY-CS2-PRIME' AND stock_available > 0
+    ORDER BY stock_available DESC, id ASC
+    LIMIT 1
+  `).get();
+  assert.ok(row?.id);
+  return row.id;
+}
+
 test('calcDiscount percent', () => {
   assert.equal(calcDiscount({ type: 'percent', value: 10 }, 1000), 100);
 });
@@ -32,7 +44,7 @@ test('validatePromo LIMIT3', () => {
 });
 
 test('applyPromoToOrder increments used_count', () => {
-  const order = createOrder('KEY-CS2-PRIME');
+  const order = createOrder({ offerId: pickOfferId() });
   const r = applyPromoToOrder(order.id, 'LIMIT3');
   assert.equal(r.ok, true);
   assert.equal(getPromoUsedCount('LIMIT3'), 1);

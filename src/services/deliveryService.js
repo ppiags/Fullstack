@@ -18,7 +18,12 @@ export async function deliver(orderId) {
   transitionOrderFromAny(orderId, ['paid', 'out_of_stock', 'delivery_failed'], 'delivering');
 
   const requestId = order.delivery_request_id || orderId;
-  const params = { request_id: requestId, sku: order.sku, order_id: orderId };
+  const params = {
+    request_id: requestId,
+    sku: order.sku,
+    order_id: orderId,
+    offer_id: order.offer_id,
+  };
 
   let result = await issueFromSupplierA(params);
   if (!result.ok && result.reason !== 'out_of_stock') {

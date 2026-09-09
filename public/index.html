@@ -21,7 +21,7 @@
       <div class="sf-search-wrap">
         <div class="sf-search">
           <div class="sf-search__field">
-            <input type="search" class="sf-search__input" placeholder="Игра, приложение или услуга..." readonly tabindex="-1">
+            <input type="search" class="sf-search__input" id="searchInput" placeholder="Игра, приложение или услуга..." autocomplete="off">
             <button type="button" class="sf-search__fav" aria-label="Избранное" tabindex="-1">
               <img src="/assets/figma/favorite.svg" alt="" width="14" height="13">
             </button>
@@ -174,6 +174,11 @@
       <section class="sf-section">
         <div class="sf-section__head sf-section__head--popular">
           <h2 class="sf-section__title">Популярные товары</h2>
+          <div class="sf-price-filters" aria-label="Фильтр по цене">
+            <input type="number" class="sf-price-filters__input" id="priceMin" placeholder="от ₽" min="0" step="1" aria-label="Минимальная цена">
+            <span class="sf-price-filters__sep">—</span>
+            <input type="number" class="sf-price-filters__input" id="priceMax" placeholder="до ₽" min="0" step="1" aria-label="Максимальная цена">
+          </div>
           <div class="sf-filters" id="categoryFilters" role="tablist" aria-label="Категории">
             <button type="button" class="sf-filter sf-filter--active" data-category="donate" role="tab">
               <img src="/assets/figma/donate.svg" alt="" width="14" height="14"> Донат
@@ -199,6 +204,10 @@
           </div>
         </div>
         <div class="sf-product-grid" id="productsGrid"></div>
+        <p class="sf-catalog-error" id="catalogError" hidden></p>
+        <div class="sf-load-more-wrap">
+          <button type="button" class="sf-load-more" id="loadMoreBtn" hidden>Показать ещё</button>
+        </div>
         <p class="sf-empty" id="productsEmpty" hidden>Нет товаров в этой категории</p>
       </section>
 
@@ -218,8 +227,11 @@
         <div class="sf-product-row" id="otherRow"></div>
       </section>
 
-      <section class="sf-section">
-        <h2 class="sf-section__title">Последние отзывы</h2>
+      <section class="sf-section sf-section--reviews">
+        <div class="sf-section__head">
+          <h2 class="sf-section__title">Последние отзывы</h2>
+          <button type="button" class="sf-section__more">Показать все</button>
+        </div>
         <div class="sf-reviews">
           <article class="sf-review">
             <div class="sf-review__head">

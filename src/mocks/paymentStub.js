@@ -1,5 +1,5 @@
 import { getOrder } from '../services/orderService.js';
-import { processPaymentWebhook } from '../services/webhookService.js';
+import { processPaymentWebhook, scheduleDeliver } from '../services/webhookService.js';
 
 export async function simulatePayment(orderId, result, baseUrl = `http://localhost:${process.env.PORT || 3000}`) {
   const order = getOrder(orderId);
@@ -15,6 +15,7 @@ export async function simulatePayment(orderId, result, baseUrl = `http://localho
     created_at: new Date().toISOString(),
   };
 
-  await processPaymentWebhook(payload);
+  const wh = processPaymentWebhook(payload);
+  if (wh.needsDeliver) scheduleDeliver(orderId);
   return payload;
 }

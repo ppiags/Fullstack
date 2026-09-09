@@ -1,12 +1,14 @@
 import { jsonPost, jsonGet } from './lib/http.js';
 
+const OFFER_ID = 'off_KEY-CS2-PRIME_2';
+
 async function main() {
   const orderId = `ord_early_${Date.now().toString(36)}`;
   const payload = {
     event_id: `evt_early_${Date.now()}`,
     order_id: orderId,
     status: 'paid',
-    amount: 1290,
+    amount: 1310,
     currency: 'RUB',
     created_at: new Date().toISOString(),
   };
@@ -14,7 +16,7 @@ async function main() {
   await jsonPost('/webhook/payment', payload);
 
   const { body: order } = await jsonPost('/api/orders', {
-    sku: 'KEY-CS2-PRIME',
+    offerId: OFFER_ID,
     id: orderId,
   });
 

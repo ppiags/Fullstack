@@ -1,10 +1,6 @@
 # Магазин цифровых товаров
 
-Тестовое задание fullstack (этапы 1–4): витрина, однократная выдача под гонками, recovery, промокоды.
-
-**ТЗ:** [Google Doc](https://docs.google.com/document/d/1RD9pNfKdf-U4BsD9JFcJ3l2ObfxAwpCr2pGOf9N81z4/edit)
-
-## Запуск
+## Инструкция запуска
 
 ```bash
 npm install
@@ -16,37 +12,25 @@ npm start
 
 Admin: http://localhost:3000/admin.html — заголовок `X-Admin-Token: dev-admin-token`
 
-## Флоу покупки
+## Как воспроизвести живое обновление витрины и покупку последней единицы наперегонки
 
-1. **Купить** на карточке CS2 Prime (фильтр «Предметы») → `order.html`
-2. Опционально промокод (`WELCOME10`, `GG500`, `LIMIT3`, `ONCEONLY`)
-3. **Оплатить (успех)** → webhook → автовыдача ключа
+### Живое обновление витрины
 
-## Воспроизведение гонок
+1. Откройте **http://localhost:3000** в двух вкладках.
+2. В admin (`/admin.html`) карточка следует `buyOfferId` SKU (самый дешёвый in-stock), не обязательно id в форме. Статус после выбора/сейва показывает, кого купит кнопка. Цена на карточке — `minPrice` (MIN цены по всем offers SKU, включая stock 0); PATCH offer меняет её, если новая цена стала минимумом. Sold-out карточки — «Обнулить SKU» (все offers SKU в 0). Last-unit: `off_race_last` / поиск `KEY-CS2-PRIME`. «Карточка купит этот» делает выбранный offer `buyOfferId` (если у соседей цена > 0).
+3. На обеих вкладках у карточки сразу меняется цена. Если у SKU не осталось стока — кнопка **Купить** становится «Нет в наличии» и `disabled`.
+4. Если открыт checkout этого оффера — сумма на экране оплаты тоже обновится до оплаты.
 
-**Терминал 1** — сервер с тест-флагом:
+### Покупка последней единицы наперегонки
 
-```bash
-ALLOW_TEST_ORDER_ID=1 npm start
-```
+Демо-оффер `off_race_last` в seed, сток 1. Поиск `KEY-CS2-PRIME` → **Купить**.
 
-**Терминал 2:**
+**Две вкладки:** нажать «Купить» почти вместе. Один — заказ `reserved`, второй — «Товар только что раскупили» и другие продавцы.
 
-```bash
-ALLOW_TEST_ORDER_ID=1 npm run test:races
-```
-
-| Скрипт | Сценарий | Критерий ТЗ |
-|--------|----------|-------------|
-| `race-test-webhook.js` | 50 параллельных webhook → 1 выдача | #1 |
-| `race-test-webhook-dedup.js` | Повтор `event_id` | #2 |
-| `race-test-webhook-early.js` | Webhook до создания заказа | #3 |
-| `race-test-double-buy.js` | 20 параллельных «Купить» с одним `idempotency_key` | доп. |
-| `race-test-promo.js` | `LIMIT3` под параллельными запросами | #5 |
-| `race-test-out-of-stock.js` | Пустой пул → admin retry → `delivered` | #4 |
-
-## Тесты
+**20 параллельных POST** (браузер не трогать) — сервер с `ALLOW_TEST_ORDER_ID=1`:
 
 ```bash
-npm test
+npm run test:last-unit
 ```
+
+Один `201`, остальные `409 SOLD_OUT`.

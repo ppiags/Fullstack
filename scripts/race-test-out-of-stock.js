@@ -1,9 +1,12 @@
 import { jsonPost, jsonGet } from './lib/http.js';
 
+const OFFER_ID = 'off_KEY-CS2-PRIME_2';
+
 async function main() {
   await jsonPost('/api/test/drain-keys', {});
 
-  const { body: order } = await jsonPost('/api/orders', { sku: 'KEY-CS2-PRIME' });
+  const { body: order } = await jsonPost('/api/orders', { offerId: OFFER_ID });
+  if (order.status !== 'reserved') throw new Error(`Expected reserved, got ${order.status}`);
   await jsonPost(`/api/pay/${order.id}`, { result: 'success' });
   await new Promise((r) => setTimeout(r, 300));
 
@@ -12,7 +15,7 @@ async function main() {
     throw new Error(`Expected out_of_stock, got ${final.status}`);
   }
 
-  const repl = await jsonPost('/api/test/replenish-keys', { count: 1 });
+  const repl = await jsonPost('/api/test/replenish-keys', { count: 1, offerId: OFFER_ID });
   if (repl.body.replenished < 1) throw new Error('Failed to replenish keys');
 
   const retry = await jsonPost(`/api/admin/orders/${order.id}/retry`, {}, {

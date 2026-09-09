@@ -5,15 +5,19 @@
   "scripts": {
     "start": "node src/server.js",
     "seed": "node src/db/seed.js",
-    "test": "node --test tests/**/*.test.js",
-    "test:races": "node scripts/run-all-races.js"
+    "test": "node --test --test-concurrency=1 tests/**/*.test.js",
+    "test:races": "node scripts/run-all-races.js",
+    "test:last-unit": "node scripts/race-test-last-unit.js",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "better-sqlite3": "^11.7.0",
     "express": "^4.21.0",
-    "uuid": "^11.0.3"
+    "uuid": "^11.0.3",
+    "ws": "^8.21.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "supertest": "^7.0.0"
   }
 }

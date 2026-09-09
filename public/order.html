@@ -11,7 +11,15 @@
     <h1>Заказ <span id="orderId"></span></h1>
     <div class="card">
       <div>Статус: <span id="status" class="status"></span></div>
+      <div id="holdCountdown" hidden style="margin-top:8px;color:var(--muted)">
+        Оплатите в течение: <strong id="holdTimer">—</strong>
+      </div>
+      <div id="holdExpiredSection" hidden style="margin-top:16px">
+        <p style="color:#ff7675">Бронь снята — время резерва истекло.</p>
+        <p><a href="/" style="color:var(--accent)">← Вернуться к товарам</a></p>
+      </div>
       <div id="amounts" style="margin-top:8px;color:var(--muted)"></div>
+      <p id="priceUpdatedMsg" hidden style="margin-top:8px;color:var(--accent)">Цена обновлена</p>
       <div id="codeSection" hidden>
         <p style="margin-top:16px">Ваш ключ:</p>
         <div class="code-box" id="deliveryCode"></div>

@@ -19,9 +19,27 @@ export function getDb() {
   return dbInstance;
 }
 
+function migrateColumns(db) {
+  const migrations = [
+    'ALTER TABLE orders ADD COLUMN offer_id TEXT',
+    'ALTER TABLE orders ADD COLUMN hold_expires_at TEXT',
+    'ALTER TABLE keys ADD COLUMN offer_id TEXT',
+  ];
+  for (const sql of migrations) {
+    try {
+      db.exec(sql);
+    } catch (e) {
+      if (!String(e.message).includes('duplicate column name')) throw e;
+    }
+  }
+  db.exec('CREATE INDEX IF NOT EXISTS idx_keys_offer_status ON keys(offer_id, status)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_orders_hold ON orders(status, hold_expires_at)');
+}
+
 export function initDb(db = getDb()) {
   const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
   db.exec(schema);
+  migrateColumns(db);
 }
 
 export function seedDb(db = getDb()) {
